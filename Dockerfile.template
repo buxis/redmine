@@ -1,7 +1,9 @@
 FROM ruby:%%RUBY_VERSION%%-slim
 
-# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-RUN groupadd -r redmine && useradd -r -g redmine redmine
+ENV REDMINE_UID 999
+ENV REDMINE_GID 999
+ENV REDMINE_USER redmine
+ENV REDMINE_GROUP redmine
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		ca-certificates \
@@ -56,7 +58,7 @@ RUN wget -O redmine.tar.gz "https://www.redmine.org/releases/redmine-${REDMINE_V
 	&& tar -xvf redmine.tar.gz --strip-components=1 \
 	&& rm redmine.tar.gz files/delete.me log/delete.me \
 	&& mkdir -p tmp/pdf public/plugin_assets \
-	&& chown -R redmine:redmine ./
+	&& find . > redmine_file_list.txt
 
 RUN buildDeps=' \
 		gcc \

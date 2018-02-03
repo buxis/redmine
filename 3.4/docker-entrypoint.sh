@@ -23,6 +23,10 @@ file_env() {
 	unset "$fileVar"
 }
 
+id -g $REDMINE_GROUP &> /dev/null || groupadd -r -g $REDMINE_GID $REDMINE_GROUP
+id -u $REDMINE_USER &> /dev/null || useradd -d /usr/src/redmine -s /sbin/nologon -r -u $REDMINE_UID -g $REDMINE_GROUP $REDMINE_USER
+xargs -P0 chown $REDMINE_GROUP:$REDMINE_USER < redmine_file_list.txt
+
 case "$1" in
 	rails|rake|passenger)
 		if [ ! -f './config/database.yml' ]; then
@@ -76,7 +80,7 @@ case "$1" in
 				file_env 'REDMINE_DB_ENCODING' 'utf8'
 				
 				mkdir -p "$(dirname "$REDMINE_DB_DATABASE")"
-				chown -R redmine:redmine "$(dirname "$REDMINE_DB_DATABASE")"
+				chown -R $REDMINE_GROUP:$REDMINE_USER "$(dirname "$REDMINE_DB_DATABASE")"
 			fi
 			
 			REDMINE_DB_ADAPTER="$adapter"
@@ -125,16 +129,16 @@ case "$1" in
 			fi
 		fi
 		if [ "$1" != 'rake' -a -z "$REDMINE_NO_DB_MIGRATE" ]; then
-			gosu redmine rake db:migrate
+			gosu $REDMINE_USER rake db:migrate
 		fi
 		
 		# https://www.redmine.org/projects/redmine/wiki/RedmineInstall#Step-8-File-system-permissions
-		chown -R redmine:redmine files log public/plugin_assets
+		chown -R $REDMINE_GROUP:$REDMINE_USER files log public/plugin_assets
 		# directories 755, files 644:
 		chmod -R ugo-x,u+rwX,go+rX,go-w files log tmp public/plugin_assets
 		
 		if [ "$1" != 'rake' -a -n "$REDMINE_PLUGINS_MIGRATE" ]; then
-			gosu redmine rake redmine:plugins:migrate
+			gosu $REDMINE_USER rake redmine:plugins:migrate
 		fi
 		
 		# remove PID file to enable restarting the container
@@ -145,7 +149,7 @@ case "$1" in
 			set -- tini -- "$@"
 		fi
 		
-		set -- gosu redmine "$@"
+		set -- gosu $REDMINE_USER "$@"
 		;;
 esac
 

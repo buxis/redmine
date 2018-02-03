@@ -23,6 +23,7 @@ passenger="$(curl -fsSL 'https://rubygems.org/api/v1/gems/passenger.json' | sed 
 
 travisEnv=
 for version in "${versions[@]}"; do
+	echo $version
 	fullVersion="$(echo $versionsPage | sed -r "s/.*($version\.[0-9]+)\.tar\.gz[^.].*/\1/" | sort -V | tail -1)"
 	md5="$(curl -fsSL "$relasesUrl/redmine-$fullVersion.tar.gz.md5" | cut -d' ' -f1)"
 
@@ -38,7 +39,7 @@ for version in "${versions[@]}"; do
 			Dockerfile.template > "$version/Dockerfile"
 
 		mkdir -p "$version/passenger"
-		sed -e 's/%%REDMINE%%/redmine:'"$version"'/' \
+		sed -e 's/%%REDMINE%%/buxis\/redmine:'"$version"'/' \
 			-e 's/%%PASSENGER_VERSION%%/'"$passenger"'/' \
 			Dockerfile-passenger.template > "$version/passenger/Dockerfile"
 	)

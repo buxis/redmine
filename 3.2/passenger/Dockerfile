@@ -1,4 +1,4 @@
-FROM redmine:3.2
+FROM buxis/redmine:3.2
 
 ENV PASSENGER_VERSION 5.2.0
 
