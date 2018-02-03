@@ -24,8 +24,11 @@ file_env() {
 }
 
 id -g $REDMINE_GROUP &> /dev/null || groupadd -r -g $REDMINE_GID $REDMINE_GROUP
-id -u $REDMINE_USER &> /dev/null || useradd -d /usr/src/redmine -s /sbin/nologon -r -u $REDMINE_UID -g $REDMINE_GROUP $REDMINE_USER
-xargs -P0 chown $REDMINE_GROUP:$REDMINE_USER < redmine_file_list.txt
+id -u $REDMINE_USER &> /dev/null || useradd -d /usr/src/redmine -s /sbin/nologon -g $REDMINE_GROUP -r -u $REDMINE_UID $REDMINE_USER
+if [ -f redmine_file_list.txt ]; then
+	xargs -P0 chown $REDMINE_GROUP:$REDMINE_USER < redmine_file_list.txt
+	rm -f redmine_file_list.txt
+fi
 
 case "$1" in
 	rails|rake|passenger)
