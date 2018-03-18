@@ -2,6 +2,8 @@ FROM buxis/redmine:3.4
 
 ENV PASSENGER_VERSION 5.2.1
 
+ENV PASSENGER_DOWNLOAD_NATIVE_SUPPORT_BINARY 0
+
 RUN buildDeps=' \
 		make \
 	' \
